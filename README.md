@@ -1,0 +1,87 @@
+# Golf Swing Beat
+
+A golf swing tempo trainer that runs in your browser. A moving light and count sounds mark three timings: takeaway, top, and impact.
+
+**Live:** <https://wasabeef.github.io/golf-swing-beat/>
+
+## Features
+
+- BPM from 20 to 120
+- Backswing-to-downswing ratio: 1:1, 2:1, or 3:1
+- Two sounds, volume control, and a left-handed layout (in the gear menu)
+- Built for phones in landscape
+- Sound and light stay in sync, including audio output latency
+- No runtime dependencies (TypeScript, Web Audio API, Canvas)
+
+## How to use
+
+1. Put your phone in landscape, outside your swing path. Line up the club head with the vertical light (the start line).
+2. Press START. Lights move in from both edges. Start your takeaway on the first sound, when they meet.
+3. The second sound is the top, and the third (higher) sound is impact.
+
+| Action | Button | Key |
+|---|---|---|
+| Start / stop | START / STOP | Space |
+| Change BPM (hold to repeat) | BPM − / + | ↑ ↓ |
+| Change ratio (applies from the next swing) | RATIO 1:1 / 2:1 / 3:1 | R |
+| Change sound | Gear → SOUND | S |
+| Volume | Gear → VOL | — |
+| Left-handed | Gear → HAND | — |
+| Full screen (supported browsers only) | Gear → SCREEN | — |
+
+Settings are saved in your browser.
+
+## BPM and ratio
+
+BPM is the speed of the backswing (takeaway to top). The ratio sets how long the downswing (top to impact) is: 1/ratio of the backswing.
+
+| Shot | Ratio | Notes |
+|---|---|---|
+| Driver to irons | 3:1 | Tour players swing at about 3:1, with a backswing of 0.7–0.8 s. BPM 80 gives a 0.75 s backswing and a 0.25 s downswing. |
+| Chips and putts | 2:1 | Keep the stroke time the same for every length. About 0.6 s back and 0.3 s through (around BPM 100). |
+| Counting rhythm | 1:1 | Three evenly spaced sounds. |
+
+There is no single "correct" BPM for each club. Use these as a starting point and find what feels natural.
+
+Sources:
+
+- [Towards a Biomechanical Understanding of Tempo in the Golf Swing (arXiv)](https://arxiv.org/abs/physics/0611291)
+- [Find a rhythm and tempo that fits your game (PGA.com)](https://pga.com/story/find-a-rhythm-and-tempo-that-fits-your-game)
+- [Practice line, path and tempo to avoid pesky 3 putts (PGA.com)](https://pga.com/story/practice-line-path-and-tempo-to-avoid-pesky-3-putts)
+- [What Is Golf Swing Tempo Ratio (Blast Motion)](https://blastmotion.com/blog/what-is-golf-swing-tempo-ratio/)
+
+## Development
+
+Requires Node.js 23.6+ and Python 3 (for the local server).
+
+```bash
+npm install
+npm run build      # src/*.ts -> dist/*.js
+npm run serve      # http://localhost:8000
+npm run dev        # rebuild on change (use with serve)
+npm run typecheck
+npm test
+```
+
+Open the app through a local server. It does not work from `file://`.
+
+Pushing to `main` runs type checks, tests, and a build, then deploys to GitHub Pages (`.github/workflows/pages.yml`).
+
+### How sync works
+
+- Sounds are scheduled ahead on the `AudioContext` clock.
+- The light is drawn from the time you actually hear (`getOutputTimestamp`), plus one measured frame. This removes the output latency, which can be over 200 ms.
+- BPM and sound changes reschedule pending sounds. Ratio changes apply from the next swing.
+
+All tunable values are in `src/config.ts`.
+
+## Browser notes
+
+- iPhone / iPad: sound may be muted when the silent switch is on.
+- Screen Wake Lock works only in supported browsers.
+- With Bluetooth headphones, sync depends on the latency the browser reports.
+- The app stops when audio is interrupted or the page is hidden.
+
+## License
+
+[MIT](LICENSE)

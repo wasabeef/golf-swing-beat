@@ -1,0 +1,470 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f3f5f2;
+  --surface: #ffffff;
+  --text: #17201b;
+  --text-muted: #5b6760;
+  --border: #d6ddd8;
+  --btn-bg: #e8ece9;
+  --btn-bg-active: #d4dbd6;
+  --accent: #0f9f6e;
+  --accent-text: #ffffff;
+  --meter-bg: #070a09;
+  --meter-border: #2a332e;
+  --meter-light: #3dffb0;
+  --meter-start-line: #3dffb0;
+  --meter-tick: #26302b;
+  --display-text: #3dffb0;
+  --radius: 14px;
+  --gutter: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0d1110;
+    --surface: #161c19;
+    --text: #e6ece8;
+    --text-muted: #94a39a;
+    --border: #2a332e;
+    --btn-bg: #222a26;
+    --btn-bg-active: #2f3934;
+    --accent: #1fc48a;
+    --accent-text: #04140d;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0d1110;
+  --surface: #161c19;
+  --text: #e6ece8;
+  --text-muted: #94a39a;
+  --border: #2a332e;
+  --btn-bg: #222a26;
+  --btn-bg-active: #2f3934;
+  --accent: #1fc48a;
+  --accent-text: #04140d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Hiragino Sans',
+    'Noto Sans JP',
+    sans-serif;
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: max(var(--gutter), env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right))
+    max(var(--gutter), env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+  display: grid;
+  gap: 20px;
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+}
+
+.app-tagline {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* メーター本体 */
+.device {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: stretch;
+  padding: 12px;
+  background: var(--meter-bg);
+  border: 1px solid var(--meter-border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+}
+
+.meter-frame {
+  min-width: 0;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #030504, #0b100e 50%, #030504);
+  box-shadow: inset 0 0 18px rgb(0 0 0 / 0.9);
+}
+
+.meter {
+  display: block;
+  width: 100%;
+  height: clamp(72px, 16vw, 140px);
+}
+
+.readout {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 8px;
+  min-width: 96px;
+}
+
+.display {
+  /* 表示する文字（BPM・比率・音色・Err）の最大文字数。文字が変わっても幅を変えず、隣のボタンをずらさない */
+  --display-chars: 3;
+  display: grid;
+  place-items: center;
+  min-width: calc(var(--display-chars) * 1ch + 24px);
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #020403;
+  color: var(--display-text);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: clamp(1.8rem, 6vw, 2.8rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--display-text) 70%, transparent);
+}
+
+.display.is-sound {
+  font-style: italic;
+}
+
+/* 操作部（BPM・比率・右下に設定） */
+.controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.control {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.control-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn {
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--btn-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  /* iOS で長押ししたときのメニュー表示を防ぐ（テンポの長押し用） */
+  -webkit-touch-callout: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.btn:active {
+  background: var(--btn-bg-active);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn:focus-visible,
+.volume:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-text);
+  letter-spacing: 0.08em;
+}
+
+.btn-primary:active {
+  background: var(--accent);
+  filter: brightness(0.9);
+}
+
+.btn-primary[aria-pressed='true'] {
+  background: #e0533d;
+  color: #ffffff;
+}
+
+.volume {
+  width: 100%;
+  min-height: 48px;
+  accent-color: var(--accent);
+}
+
+/* 比率の選択（1:1 / 2:1 / 3:1） */
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+}
+
+.segment {
+  padding-inline: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.segment[aria-checked='true'] {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+/* 歯車ボタン: 枠や背景のないアイコンだけ（押せる範囲は確保する） */
+.btn-icon {
+  display: grid;
+  place-items: center;
+  /* 高さは他のボタンと同じにして、アイコンを行の中央にそろえる */
+  width: 36px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+}
+
+.btn-icon:active {
+  background: none;
+  color: var(--text);
+}
+
+/* 設定ポップアップ */
+.settings {
+  width: min(560px, calc(100vw - 2 * var(--gutter)));
+  max-height: calc(100dvh - 2 * var(--gutter));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.4);
+}
+
+.settings::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.settings-body {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.btn-close {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .device {
+    grid-template-columns: 1fr;
+  }
+
+  .readout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+}
+
+/* 縦向きのスマホ: 横向きにするよう案内する */
+.rotate-notice {
+  display: none;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-content: center;
+    gap: 16px;
+    padding: var(--gutter);
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+  }
+
+  .rotate-notice-icon {
+    margin: 0 auto;
+    width: 56px;
+    height: 96px;
+    border: 4px solid var(--accent);
+    border-radius: 12px;
+    animation: rotate-hint 2.4s ease-in-out infinite;
+  }
+
+  .rotate-notice p {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .rotate-notice small {
+    color: var(--text-muted);
+  }
+}
+
+@keyframes rotate-hint {
+  0%,
+  20% {
+    transform: rotate(0deg);
+  }
+  50%,
+  80% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate-notice-icon {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
+
+/* 横向きのスマホ: メーターを大きくし、1 画面に収める */
+@media (orientation: landscape) and (max-height: 540px) {
+  .app {
+    height: 100dvh;
+    max-width: none;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .app-title {
+    font-size: 1rem;
+  }
+
+  .app-tagline {
+    display: none;
+  }
+
+  .device {
+    grid-template-columns: 1fr auto;
+    min-height: 0;
+    padding: 8px;
+  }
+
+  /* canvas の描画サイズがレイアウトに影響して伸び続けないよう、枠いっぱいに絶対配置する */
+  .meter-frame {
+    position: relative;
+    min-height: 0;
+  }
+
+  .meter {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .readout {
+    grid-template-columns: none;
+    grid-template-rows: 1fr auto;
+    min-width: 112px;
+  }
+
+  .controls {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .control {
+    gap: 2px;
+  }
+
+  .control-label {
+    font-size: 0.65rem;
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+
+  .btn-icon {
+    width: 36px;
+    padding: 0;
+  }
+
+  .settings-body {
+    padding: 12px 16px;
+  }
+
+  .volume {
+    min-height: 44px;
+  }
+}

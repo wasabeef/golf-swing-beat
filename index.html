@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="光と音でゴルフスイングのリズムをつかむテンポトレーナー" />
+    <meta name="theme-color" content="#070a09" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Swing Beat" />
+    <title>Golf Swing Beat</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="dist/main.js"></script>
+  </head>
+  <body>
+    <div class="rotate-notice" role="alert">
+      <div class="rotate-notice-icon" aria-hidden="true"></div>
+      <p>スマホを横向きにしてください</p>
+      <small>画面の向きのロックがオンなら、オフにしてください</small>
+    </div>
+
+    <main class="app">
+      <header class="app-header">
+        <h1 class="app-title">Golf Swing Beat</h1>
+        <p class="app-tagline">光と音でスイングのリズムをつかむ</p>
+      </header>
+
+      <section class="device" aria-label="テンポメーター">
+        <div class="meter-frame">
+          <canvas id="meter" class="meter" aria-hidden="true"></canvas>
+        </div>
+        <div class="readout">
+          <output id="display" class="display" aria-live="polite"></output>
+          <button id="startStop" class="btn btn-primary" type="button" aria-pressed="false">
+            START
+          </button>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="操作">
+        <div class="control">
+          <span class="control-label" id="tempoLabel">BPM</span>
+          <div class="stepper" role="group" aria-labelledby="tempoLabel">
+            <button id="tempoDown" class="btn" type="button" aria-label="BPM を下げる">−</button>
+            <button id="tempoUp" class="btn" type="button" aria-label="BPM を上げる">＋</button>
+          </div>
+        </div>
+        <div class="control">
+          <span class="control-label" id="ratioLabel">RATIO</span>
+          <div class="segmented" id="ratio" role="radiogroup" aria-labelledby="ratioLabel"></div>
+        </div>
+        <button id="openSettings" class="btn btn-icon" type="button" aria-label="設定" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+      </section>
+    </main>
+
+    <dialog id="settingsDialog" class="settings" aria-labelledby="settingsTitle">
+      <form method="dialog" class="settings-body">
+        <div class="settings-header">
+          <h2 id="settingsTitle" class="settings-title">設定</h2>
+          <button class="btn btn-close" type="submit" aria-label="閉じる">×</button>
+        </div>
+        <div class="settings-grid">
+          <div class="control">
+            <span class="control-label">SOUND</span>
+            <button id="sound" class="btn" type="button" aria-label="カウント音を切り替える">t1</button>
+          </div>
+          <div class="control control-volume">
+            <label class="control-label" for="volume">VOL</label>
+            <input id="volume" class="volume" type="range" step="1" />
+          </div>
+          <div class="control">
+            <span class="control-label">HAND</span>
+            <button id="hand" class="btn" type="button" aria-pressed="false">右打ち</button>
+          </div>
+          <div class="control" id="fullscreenControl" hidden>
+            <span class="control-label">SCREEN</span>
+            <button id="fullscreen" class="btn" type="button" aria-pressed="false">全画面</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
