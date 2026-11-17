@@ -50,38 +50,6 @@ Sources:
 - [Practice line, path and tempo to avoid pesky 3 putts (PGA.com)](https://pga.com/story/practice-line-path-and-tempo-to-avoid-pesky-3-putts)
 - [What Is Golf Swing Tempo Ratio (Blast Motion)](https://blastmotion.com/blog/what-is-golf-swing-tempo-ratio/)
 
-## Development
-
-Requires Node.js 23.6+ and Python 3 (for the local server).
-
-```bash
-npm install
-npm run build      # src/*.ts -> dist/*.js
-npm run serve      # http://localhost:8000
-npm run dev        # rebuild on change (use with serve)
-npm run typecheck
-npm test
-```
-
-Open the app through a local server. It does not work from `file://`.
-
-Pushing to `main` runs type checks, tests, and a build, then deploys to GitHub Pages (`.github/workflows/pages.yml`).
-
-### How sync works
-
-- Sounds are scheduled ahead on the `AudioContext` clock.
-- The light is drawn from the time you actually hear (`getOutputTimestamp`), plus one measured frame. This removes the output latency, which can be over 200 ms.
-- BPM and sound changes reschedule pending sounds. Ratio changes apply from the next swing.
-
-All tunable values are in `src/config.ts`.
-
-## Browser notes
-
-- iPhone / iPad: sound may be muted when the silent switch is on.
-- Screen Wake Lock works only in supported browsers.
-- With Bluetooth headphones, sync depends on the latency the browser reports.
-- The app stops when audio is interrupted or the page is hidden.
-
 ## License
 
 [MIT](LICENSE)
