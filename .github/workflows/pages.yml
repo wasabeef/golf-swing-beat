@@ -35,8 +35,8 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp index.html styles.css _site/
-          cp -R dist _site/dist
+          cp index.html styles.css sw.js manifest.webmanifest _site/
+          cp -R dist icons _site/
 
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'

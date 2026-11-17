@@ -1,6 +1,7 @@
 // UI の組み立て。
 
 import { ClickEngine } from './audio.ts';
+import { registerServiceWorker, setupInstall } from './install.ts';
 import { AUDIO, RATIO, SOUND, TEMPO, UI, VOLUME, type SwingRatio } from './config.ts';
 import { MeterView } from './meter.ts';
 import { Metronome } from './metronome.ts';
@@ -28,6 +29,9 @@ const els = {
   settingsDialog: byId<HTMLDialogElement>('settingsDialog'),
   fullscreen: byId<HTMLButtonElement>('fullscreen'),
   fullscreenControl: byId<HTMLDivElement>('fullscreenControl'),
+  installControl: byId<HTMLDivElement>('installControl'),
+  install: byId<HTMLButtonElement>('install'),
+  installHint: byId<HTMLParagraphElement>('installHint'),
 };
 
 interface LockableOrientation {
@@ -305,6 +309,9 @@ function init(): void {
   });
 
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => meter.refreshPalette());
+
+  setupInstall({ control: els.installControl, button: els.install, hint: els.installHint });
+  registerServiceWorker();
 
   renderDisplay();
   renderControls();

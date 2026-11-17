@@ -133,4 +133,9 @@ export const UI = {
   REPEAT_INTERVAL_MS: 80,
 } as const;
 
+export const PWA = {
+  // index.html からの相対パス。scope をアプリ全体にするため、ルートに置く
+  SERVICE_WORKER_PATH: 'sw.js',
+} as const;
+
 export const STORAGE_KEY = 'golf-swing-beat:settings';
