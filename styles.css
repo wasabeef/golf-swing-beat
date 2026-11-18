@@ -311,17 +311,36 @@ body {
   font-size: 1.1rem;
 }
 
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* GitHub へのリンク: 歯車と同じく枠のないアイコンだけ */
+.icon-link {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: var(--text-muted);
+}
+
+.icon-link:hover,
+.icon-link:active {
+  color: var(--text);
+}
+
+.icon-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .btn-close {
   width: 44px;
   min-height: 44px;
   padding: 0;
-}
-
-.install-hint {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  line-height: 1.4;
 }
 
 .settings-grid {
