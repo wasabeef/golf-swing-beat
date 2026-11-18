@@ -27,11 +27,15 @@ export const CYCLE = {
 
 // バックスイングとダウンスイングの時間の比（N : 1）。
 // 1 は等間隔、2 はパター・アプローチ、3 はフルスイングのツアー選手の平均に近い
-export type SwingRatio = 1 | 2 | 3;
+export type SwingRatio = number;
 
 export const RATIO = {
-  OPTIONS: [1, 2, 3] as const satisfies readonly SwingRatio[],
-  DEFAULT: 1 as SwingRatio,
+  MIN: 1,
+  MAX: 3,
+  STEP: 0.1,
+  // STEP に合わせた小数点以下の桁数（表示と丸めに使う）
+  DECIMALS: 1,
+  DEFAULT: 1,
 } as const;
 
 // メーター上の位置（0 = 左端、1 = 右端。右打ち時は表示部側が右）
@@ -132,6 +136,8 @@ export const UI = {
   RATIO_SEPARATOR: ':',
   // 数字の下に出す「BPM · 3:1」
   TEMPO_UNIT: 'BPM',
+  // 比率を変えている間、数字の下に出す
+  RATIO_UNIT: 'RATIO',
   DISPLAY_SUB_SEPARATOR: ' · ',
   ERROR_LABEL: 'Err',
   REPEAT_DELAY_MS: 400,

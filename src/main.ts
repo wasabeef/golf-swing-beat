@@ -6,7 +6,7 @@ import { AUDIO, RATIO, SOUND, TEMPO, UI, VOLUME, type SwingRatio } from './confi
 import { MeterView } from './meter.ts';
 import { Metronome } from './metronome.ts';
 import { loadSettings, saveSettings, type Settings } from './settings.ts';
-import { clampTempo } from './timeline.ts';
+import { clampRatio, clampTempo } from './timeline.ts';
 import { ScreenKeeper } from './wake-lock.ts';
 
 function byId<T extends HTMLElement>(id: string): T {
@@ -26,7 +26,8 @@ const els = {
   volume: byId<HTMLInputElement>('volume'),
   hand: byId<HTMLButtonElement>('hand'),
   keepRunning: byId<HTMLButtonElement>('keepRunning'),
-  ratio: byId<HTMLDivElement>('ratio'),
+  ratioDown: byId<HTMLButtonElement>('ratioDown'),
+  ratioUp: byId<HTMLButtonElement>('ratioUp'),
   openSettings: byId<HTMLButtonElement>('openSettings'),
   settingsDialog: byId<HTMLDialogElement>('settingsDialog'),
   fullscreen: byId<HTMLButtonElement>('fullscreen'),
@@ -44,8 +45,8 @@ const meter = new MeterView(els.meter);
 const screenKeeper = new ScreenKeeper();
 
 let soundLabelTimer: ReturnType<typeof setTimeout> | undefined;
-/** 表示部に一時的に出している文字（null ならテンポを表示） */
-let temporaryLabel: string | null = null;
+/** 表示部に一時的に出している文字（null ならテンポを表示）。sub は数字の下の説明（null なら「BPM · 比率」） */
+let temporaryLabel: { readonly text: string; readonly sub: string | null } | null = null;
 let lastFrameTime: number | null = null;
 let frameInterval: number = AUDIO.DISPLAY_LEAD_SEC;
 
@@ -53,12 +54,14 @@ function persist(): void {
   saveSettings(settings);
 }
 
-const ratioLabel = (ratio: SwingRatio): string => `${ratio}${UI.RATIO_SEPARATOR}1`;
+const formatRatio = (ratio: SwingRatio): string => ratio.toFixed(RATIO.DECIMALS);
+const ratioLabel = (ratio: SwingRatio): string => `${formatRatio(ratio)}${UI.RATIO_SEPARATOR}1`;
 
 function renderDisplay(): void {
-  els.display.value = temporaryLabel ?? String(settings.tempo);
-  els.display.classList.toggle('is-sound', temporaryLabel !== null);
-  els.displaySub.textContent = `${UI.TEMPO_UNIT}${UI.DISPLAY_SUB_SEPARATOR}${ratioLabel(settings.ratio)}`;
+  els.display.value = temporaryLabel?.text ?? String(settings.tempo);
+  els.display.classList.toggle('is-sound', temporaryLabel !== null && temporaryLabel.sub === null);
+  els.displaySub.textContent =
+    temporaryLabel?.sub ?? `${UI.TEMPO_UNIT}${UI.DISPLAY_SUB_SEPARATOR}${ratioLabel(settings.ratio)}`;
 }
 
 function renderControls(): void {
@@ -66,11 +69,8 @@ function renderControls(): void {
   els.startStop.setAttribute('aria-pressed', String(metronome.active));
   els.tempoDown.disabled = settings.tempo <= TEMPO.MIN;
   els.tempoUp.disabled = settings.tempo >= TEMPO.MAX;
-  for (const button of ratioButtons) {
-    const selected = Number(button.dataset.ratio) === settings.ratio;
-    button.setAttribute('aria-checked', String(selected));
-    button.tabIndex = selected ? 0 : -1;
-  }
+  els.ratioDown.disabled = settings.ratio <= RATIO.MIN;
+  els.ratioUp.disabled = settings.ratio >= RATIO.MAX;
   els.sound.textContent = settings.sound;
   els.hand.textContent = settings.leftHanded ? '左打ち' : '右打ち';
   els.hand.setAttribute('aria-pressed', String(settings.leftHanded));
@@ -91,36 +91,15 @@ function changeTempo(delta: number): void {
   renderControls();
 }
 
-/** 比率の選択ボタンを作る（バックスイング : ダウンスイング） */
-function createRatioButtons(): HTMLButtonElement[] {
-  return RATIO.OPTIONS.map((ratio) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'btn segment';
-    button.setAttribute('role', 'radio');
-    button.dataset.ratio = String(ratio);
-    button.textContent = ratioLabel(ratio);
-    button.setAttribute('aria-label', `バックスイング ${ratio}、ダウンスイング 1`);
-    button.addEventListener('click', () => changeRatio(ratio));
-    els.ratio.append(button);
-    return button;
-  });
-}
-
-const ratioButtons = createRatioButtons();
-
-function changeRatio(ratio: SwingRatio): void {
-  if (ratio === settings.ratio) return;
-  settings.ratio = ratio;
-  metronome.setRatio(ratio);
+/** 比率を変える（バックスイング : ダウンスイング）。実行中なら次のスタート音から切り替わる */
+function changeRatio(delta: number): void {
+  const next = clampRatio(settings.ratio + delta);
+  if (next === settings.ratio) return;
+  settings.ratio = next;
+  metronome.setRatio(next);
   persist();
-  showMessage(ratioLabel(ratio));
+  showMessage(formatRatio(next), UI.RATIO_UNIT);
   renderControls();
-}
-
-function cycleRatio(): void {
-  const index = RATIO.OPTIONS.indexOf(settings.ratio);
-  changeRatio(RATIO.OPTIONS[(index + 1) % RATIO.OPTIONS.length] ?? RATIO.DEFAULT);
 }
 
 function cycleSound(): void {
@@ -157,8 +136,8 @@ async function toggleRunning(): Promise<void> {
 }
 
 /** 表示部に一時的に文字を出す（音色・比率の切り替え、エラー表示） */
-function showMessage(text: string): void {
-  temporaryLabel = text;
+function showMessage(text: string, sub: string | null = null): void {
+  temporaryLabel = { text, sub };
   clearTimeout(soundLabelTimer);
   soundLabelTimer = setTimeout(() => {
     temporaryLabel = null;
@@ -247,22 +226,24 @@ function bindKeyboard(): void {
         void toggleRunning();
         break;
       case 'ArrowUp':
-      case 'ArrowRight':
         event.preventDefault();
         changeTempo(TEMPO.STEP);
         break;
       case 'ArrowDown':
-      case 'ArrowLeft':
         event.preventDefault();
         changeTempo(-TEMPO.STEP);
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        changeRatio(RATIO.STEP);
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        changeRatio(-RATIO.STEP);
         break;
       case 's':
       case 'S':
         cycleSound();
-        break;
-      case 'r':
-      case 'R':
-        cycleRatio();
         break;
     }
   });
@@ -309,6 +290,8 @@ function init(): void {
   });
   bindRepeat(els.tempoDown, () => changeTempo(-TEMPO.STEP));
   bindRepeat(els.tempoUp, () => changeTempo(TEMPO.STEP));
+  bindRepeat(els.ratioDown, () => changeRatio(-RATIO.STEP));
+  bindRepeat(els.ratioUp, () => changeRatio(RATIO.STEP));
   bindKeyboard();
 
   engine.onInterrupted = () => {

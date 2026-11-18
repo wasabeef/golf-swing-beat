@@ -6,6 +6,7 @@ import {
   beatPosition,
   beatSeconds,
   beatTime,
+  clampRatio,
   clampTempo,
   createTimeline,
   cycleLayout,
@@ -16,6 +17,9 @@ import {
 } from '../src/timeline.ts';
 
 const EPSILON = 1e-9;
+
+// 範囲の両端と、整数・小数の比率
+const RATIO_SAMPLES = [RATIO.MIN, 1.5, 2, 2.7, RATIO.MAX];
 const EVEN: SwingRatio = 1;
 const CYCLE_BEATS = cycleLayout(EVEN).length;
 
@@ -31,6 +35,20 @@ describe('clampTempo', () => {
 
   it('小数は整数に丸める', () => {
     assert.equal(clampTempo(68.6), 69);
+  });
+});
+
+describe('clampRatio', () => {
+  it('範囲外は MIN / MAX で止める', () => {
+    assert.equal(clampRatio(RATIO.MIN - 1), RATIO.MIN);
+    assert.equal(clampRatio(RATIO.MAX + 1), RATIO.MAX);
+  });
+
+  it('0.1 刻みに丸め、足し続けた誤差も残さない', () => {
+    assert.equal(clampRatio(2.46), 2.5);
+    let ratio: number = RATIO.MIN;
+    for (let i = 0; i < 10; i += 1) ratio = clampRatio(ratio + RATIO.STEP);
+    assert.equal(ratio, 2);
   });
 });
 
@@ -72,7 +90,7 @@ describe('ticksBetween', () => {
     );
   });
 
-  for (const ratio of RATIO.OPTIONS) {
+  for (const ratio of RATIO_SAMPLES) {
     it(`比率 ${ratio}:1 はトップからインパクトまでがバックスイングの 1/${ratio}`, () => {
       const [start, top, impact, next] = ticksBetween(createTimeline(0, 60, ratio), 0, 10);
       assert.ok(start && top && impact && next);
@@ -143,7 +161,7 @@ describe('meterLights', () => {
   });
 
   it('光の位置と強さは常に 0〜1 に収まる（どの比率でも）', () => {
-    for (const ratio of RATIO.OPTIONS) {
+    for (const ratio of RATIO_SAMPLES) {
       for (let u = -1; u < cycleLayout(ratio).length * 2; u += 0.01) {
         for (const { x, intensity } of meterLights(u, ratio)) {
           assert.ok(x >= 0 && x <= 1, `ratio=${ratio} u=${u} x=${x}`);
@@ -154,7 +172,7 @@ describe('meterLights', () => {
   });
 
   it('比率を変えても、トップで表示部側の端、インパクトでスタートラインに来る', () => {
-    for (const ratio of RATIO.OPTIONS) {
+    for (const ratio of RATIO_SAMPLES) {
       const { top, impact } = cycleLayout(ratio);
       assert.ok(Math.abs(meterLights(top, ratio)[0]!.x - METER.TOP_X) < EPSILON);
       assert.ok(Math.abs(meterLights(impact, ratio)[0]!.x - METER.START_X) < EPSILON);

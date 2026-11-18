@@ -7,7 +7,7 @@ A golf swing tempo trainer that runs in your browser. A moving light and count s
 ## Features
 
 - BPM from 20 to 120
-- Backswing-to-downswing ratio: 1:1, 2:1, or 3:1
+- Backswing-to-downswing ratio from 1.0:1 to 3.0:1, in steps of 0.1
 - Two sounds, volume control, and a left-handed layout (in the gear menu)
 - Built for phones in landscape. Installable from the browser menu (iPhone: Share → Add to Home Screen) and works offline
 - Sound and light stay in sync, including audio output latency
@@ -23,7 +23,7 @@ A golf swing tempo trainer that runs in your browser. A moving light and count s
 |---|---|---|
 | Start / stop | START / STOP | Space |
 | Change BPM (hold to repeat) | BPM − / + | ↑ ↓ |
-| Change ratio (applies from the next swing) | RATIO 1:1 / 2:1 / 3:1 | R |
+| Change ratio by 0.1 (hold to repeat; applies from the next swing) | RATIO − / + | ← → |
 | Change sound | Gear → SOUND | S |
 | Volume | Gear → VOL | — |
 | Left-handed | Gear → HAND | — |

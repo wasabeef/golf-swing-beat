@@ -1,7 +1,7 @@
 // 設定の保存と読み込み。保存できない環境でも既定値で動く。
 
 import { RATIO, SOUND, STORAGE_KEY, TEMPO, VOLUME, type SoundKind, type SwingRatio } from './config.ts';
-import { clampTempo } from './timeline.ts';
+import { clampRatio, clampTempo } from './timeline.ts';
 
 export interface Settings {
   tempo: number;
@@ -25,9 +25,6 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = {
 const isSound = (value: unknown): value is SoundKind =>
   (SOUND.KINDS as readonly unknown[]).includes(value);
 
-const isRatio = (value: unknown): value is SwingRatio =>
-  (RATIO.OPTIONS as readonly unknown[]).includes(value);
-
 const clampVolume = (value: number): number =>
   Math.min(VOLUME.MAX, Math.max(VOLUME.MIN, Math.round(value)));
 
@@ -37,7 +34,7 @@ export function parseSettings(raw: unknown): Settings {
   const data = raw as Record<string, unknown>;
   return {
     tempo: typeof data.tempo === 'number' ? clampTempo(data.tempo) : DEFAULT_SETTINGS.tempo,
-    ratio: isRatio(data.ratio) ? data.ratio : DEFAULT_SETTINGS.ratio,
+    ratio: typeof data.ratio === 'number' ? clampRatio(data.ratio) : DEFAULT_SETTINGS.ratio,
     sound: isSound(data.sound) ? data.sound : DEFAULT_SETTINGS.sound,
     volume: typeof data.volume === 'number' ? clampVolume(data.volume) : DEFAULT_SETTINGS.volume,
     leftHanded: typeof data.leftHanded === 'boolean' ? data.leftHanded : DEFAULT_SETTINGS.leftHanded,

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { STORAGE_KEY, TEMPO, VOLUME } from '../src/config.ts';
+import { RATIO, STORAGE_KEY, TEMPO, VOLUME } from '../src/config.ts';
 import { DEFAULT_SETTINGS, loadSettings, parseSettings, saveSettings } from '../src/settings.ts';
 
 class MemoryStorage implements Storage {
@@ -39,7 +39,7 @@ describe('parseSettings', () => {
   it('不正な値は既定値に戻し、範囲外は丸める', () => {
     const parsed = parseSettings({
       tempo: TEMPO.MAX + 100,
-      ratio: 4,
+      ratio: 'fast',
       sound: 't9',
       volume: VOLUME.MAX + 1,
       leftHanded: 'yes',
@@ -59,12 +59,18 @@ describe('parseSettings', () => {
     assert.deepEqual(parseSettings(null), DEFAULT_SETTINGS);
     assert.deepEqual(parseSettings('70'), DEFAULT_SETTINGS);
   });
+
+  it('比率は範囲内に収め、0.1 刻みに丸める（以前の 1 / 2 / 3 もそのまま読める）', () => {
+    assert.equal(parseSettings({ ratio: 2 }).ratio, 2);
+    assert.equal(parseSettings({ ratio: 2.54 }).ratio, 2.5);
+    assert.equal(parseSettings({ ratio: 4 }).ratio, RATIO.MAX);
+  });
 });
 
 describe('loadSettings / saveSettings', () => {
   it('保存した設定を読み戻せる（電源を切っても設定が残る）', () => {
     const storage = new MemoryStorage();
-    const settings = { tempo: 62, ratio: 3 as const, sound: 't2' as const, volume: 30, leftHanded: true, keepRunning: true };
+    const settings = { tempo: 62, ratio: 2.7, sound: 't2' as const, volume: 30, leftHanded: true, keepRunning: true };
     saveSettings(settings, storage);
     assert.deepEqual(loadSettings(storage), settings);
   });

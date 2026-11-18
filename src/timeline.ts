@@ -1,6 +1,6 @@
 // 時刻・テンポから拍と光の位置を求める純粋関数群（DOM / Web Audio に依存しない）。
 
-import { CYCLE, METER, TEMPO, type SwingRatio, type TickKind } from './config.ts';
+import { CYCLE, METER, RATIO, TEMPO, type SwingRatio, type TickKind } from './config.ts';
 
 export interface Timeline {
   /** 拍 0（最初のスタート音）の時刻（秒） */
@@ -49,6 +49,12 @@ const whip = (p: number): number => p ** METER.WHIP_EXPONENT;
 
 export function clampTempo(bpm: number): number {
   return Math.min(TEMPO.MAX, Math.max(TEMPO.MIN, Math.round(bpm)));
+}
+
+/** 比率を範囲内に収め、STEP の刻みに丸める（0.1 を足し続けたときの誤差も消す） */
+export function clampRatio(ratio: number): SwingRatio {
+  const clamped = Math.min(RATIO.MAX, Math.max(RATIO.MIN, ratio));
+  return Number(clamped.toFixed(RATIO.DECIMALS));
 }
 
 export function beatSeconds(bpm: number): number {

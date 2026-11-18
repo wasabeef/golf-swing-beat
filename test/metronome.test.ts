@@ -8,6 +8,9 @@ import { advance, FakePlayer } from './helpers/fake-player.ts';
 
 const EPSILON = 1e-9;
 
+// 範囲の両端と、整数・小数の比率
+const RATIO_SAMPLES = [RATIO.MIN, 1.5, 2, 2.7, RATIO.MAX];
+
 /** 鳴った音の間隔が、すべて指定テンポの整数拍になっているか */
 function assertGapsAreWholeBeats(times: number[], bpm: number): void {
   const beat = 60 / bpm;
@@ -155,7 +158,7 @@ describe('Metronome', () => {
       return result;
     }
 
-    for (const ratio of RATIO.OPTIONS) {
+    for (const ratio of RATIO_SAMPLES) {
       it(`比率 ${ratio}:1 で始めると、トップ → インパクトがバックスイングの 1/${ratio}`, async () => {
         const player = new FakePlayer();
         metronome = new Metronome(player, 't1', ratio);

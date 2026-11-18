@@ -169,7 +169,7 @@ body {
 /* 操作部（BPM・比率・右下に設定） */
 .controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   align-items: end;
   gap: 12px;
   padding: 16px;
@@ -257,25 +257,6 @@ body {
   width: 100%;
   min-height: 48px;
   accent-color: var(--accent);
-}
-
-/* 比率の選択（1:1 / 2:1 / 3:1） */
-.segmented {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 4px;
-}
-
-.segment {
-  padding-inline: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.segment[aria-checked='true'] {
-  border-color: transparent;
-  background: var(--accent);
-  color: var(--accent-text);
 }
 
 /* 歯車ボタン: 枠や背景のないアイコンだけ（押せる範囲は確保する） */
