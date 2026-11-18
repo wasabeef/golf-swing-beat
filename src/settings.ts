@@ -9,6 +9,8 @@ export interface Settings {
   sound: SoundKind;
   volume: number;
   leftHanded: boolean;
+  /** 画面が隠れても止めずに続ける */
+  keepRunning: boolean;
 }
 
 export const DEFAULT_SETTINGS: Readonly<Settings> = {
@@ -17,6 +19,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = {
   sound: SOUND.DEFAULT,
   volume: VOLUME.DEFAULT,
   leftHanded: false,
+  keepRunning: false,
 };
 
 const isSound = (value: unknown): value is SoundKind =>
@@ -38,6 +41,7 @@ export function parseSettings(raw: unknown): Settings {
     sound: isSound(data.sound) ? data.sound : DEFAULT_SETTINGS.sound,
     volume: typeof data.volume === 'number' ? clampVolume(data.volume) : DEFAULT_SETTINGS.volume,
     leftHanded: typeof data.leftHanded === 'boolean' ? data.leftHanded : DEFAULT_SETTINGS.leftHanded,
+    keepRunning: typeof data.keepRunning === 'boolean' ? data.keepRunning : DEFAULT_SETTINGS.keepRunning,
   };
 }
 

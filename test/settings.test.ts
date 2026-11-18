@@ -43,6 +43,7 @@ describe('parseSettings', () => {
       sound: 't9',
       volume: VOLUME.MAX + 1,
       leftHanded: 'yes',
+      keepRunning: 1,
     });
     assert.deepEqual(parsed, {
       tempo: TEMPO.MAX,
@@ -50,6 +51,7 @@ describe('parseSettings', () => {
       sound: DEFAULT_SETTINGS.sound,
       volume: VOLUME.MAX,
       leftHanded: DEFAULT_SETTINGS.leftHanded,
+      keepRunning: DEFAULT_SETTINGS.keepRunning,
     });
   });
 
@@ -62,7 +64,7 @@ describe('parseSettings', () => {
 describe('loadSettings / saveSettings', () => {
   it('保存した設定を読み戻せる（電源を切っても設定が残る）', () => {
     const storage = new MemoryStorage();
-    const settings = { tempo: 62, ratio: 3 as const, sound: 't2' as const, volume: 30, leftHanded: true };
+    const settings = { tempo: 62, ratio: 3 as const, sound: 't2' as const, volume: 30, leftHanded: true, keepRunning: true };
     saveSettings(settings, storage);
     assert.deepEqual(loadSettings(storage), settings);
   });

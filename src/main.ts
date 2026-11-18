@@ -25,6 +25,7 @@ const els = {
   sound: byId<HTMLButtonElement>('sound'),
   volume: byId<HTMLInputElement>('volume'),
   hand: byId<HTMLButtonElement>('hand'),
+  keepRunning: byId<HTMLButtonElement>('keepRunning'),
   ratio: byId<HTMLDivElement>('ratio'),
   openSettings: byId<HTMLButtonElement>('openSettings'),
   settingsDialog: byId<HTMLDialogElement>('settingsDialog'),
@@ -74,6 +75,8 @@ function renderControls(): void {
   els.hand.textContent = settings.leftHanded ? '左打ち' : '右打ち';
   els.hand.setAttribute('aria-pressed', String(settings.leftHanded));
   meter.mirrored = settings.leftHanded;
+  els.keepRunning.textContent = settings.keepRunning ? '続ける' : '止める';
+  els.keepRunning.setAttribute('aria-pressed', String(settings.keepRunning));
 }
 
 function changeTempo(delta: number): void {
@@ -184,10 +187,22 @@ function renderFullscreen(): void {
   els.fullscreen.setAttribute('aria-pressed', String(active));
 }
 
-/** 画面ロックやアプリ切り替えでページが隠れたら止める（戻ったときに音と光がずれないように） */
-async function stopWhenHidden(): Promise<void> {
-  if (document.visibilityState !== 'hidden' || !metronome.active) return;
+/**
+ * 画面ロックやアプリ切り替えでページが隠れたときの動き。
+ * 既定では止める。「続ける」設定なら、間引かれるタイマーに備えて先の音まで予約しておく
+ * （iPhone は画面ロックやアプリ切り替えで OS が音を止めるため、そのときは止まる）
+ */
+async function handleVisibility(): Promise<void> {
+  const hidden = document.visibilityState === 'hidden';
+  metronome.lookaheadSec = hidden ? AUDIO.HIDDEN_LOOKAHEAD_SEC : AUDIO.LOOKAHEAD_SEC;
+  if (!hidden || settings.keepRunning || !metronome.active) return;
   await stopRunning();
+}
+
+function toggleKeepRunning(): void {
+  settings.keepRunning = !settings.keepRunning;
+  persist();
+  renderControls();
 }
 
 function toggleHand(): void {
@@ -281,6 +296,7 @@ function init(): void {
   els.startStop.addEventListener('click', () => void toggleRunning());
   els.sound.addEventListener('click', cycleSound);
   els.hand.addEventListener('click', toggleHand);
+  els.keepRunning.addEventListener('click', toggleKeepRunning);
   els.openSettings.addEventListener('click', () => els.settingsDialog.showModal());
   // 枠の外（背景）を押したら閉じる
   els.settingsDialog.addEventListener('click', (event) => {
@@ -301,7 +317,7 @@ function init(): void {
   els.fullscreenControl.hidden = !document.fullscreenEnabled;
   els.fullscreen.addEventListener('click', () => void toggleFullscreen());
   document.addEventListener('fullscreenchange', renderFullscreen);
-  document.addEventListener('visibilitychange', () => void stopWhenHidden());
+  document.addEventListener('visibilitychange', () => void handleVisibility());
   // 長押し時のコンテキストメニューを防ぐ（テンポの長押し用）
   document.addEventListener('contextmenu', (event) => {
     if ((event.target as HTMLElement | null)?.closest('.btn')) event.preventDefault();

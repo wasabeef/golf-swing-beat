@@ -64,6 +64,18 @@ describe('Metronome', () => {
     }
   });
 
+  it('先読みを長くすると、その先まで予約する（バックグラウンドでタイマーが間引かれても拍が抜けない）', async () => {
+    const player = new FakePlayer();
+    metronome = new Metronome(player, 't1');
+    metronome.lookaheadSec = AUDIO.HIDDEN_LOOKAHEAD_SEC;
+    const bpm = TEMPO.MAX;
+    await metronome.start(bpm);
+    const firstStart = AUDIO.START_DELAY_SEC + CYCLE.CONVERGE_BEATS * (60 / bpm);
+    const reserved = player.scheduled.filter((p) => p.when < AUDIO.HIDDEN_LOOKAHEAD_SEC);
+    assert.ok(reserved.length > 1);
+    assert.ok(reserved.every((p) => p.when >= firstStart - EPSILON));
+  });
+
   it('スケジューラが大きく遅れても、遅れた拍はずらして鳴らさずに飛ばす', async () => {
     const player = new FakePlayer();
     metronome = new Metronome(player, 't1');

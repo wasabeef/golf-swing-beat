@@ -27,6 +27,7 @@ A golf swing tempo trainer that runs in your browser. A moving light and count s
 | Change sound | Gear → SOUND | S |
 | Volume | Gear → VOL | — |
 | Left-handed | Gear → HAND | — |
+| Keep playing when you switch tabs or apps (stops by default; iPhone always stops when locked or in the background) | Gear → BACKGROUND | — |
 | Full screen (supported browsers only) | Gear → SCREEN | — |
 
 Settings are saved in your browser.

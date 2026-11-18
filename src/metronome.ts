@@ -59,6 +59,9 @@ export class Metronome {
   /** 描画した光が画面に出るまでの遅れ。実測したフレーム間隔で更新する */
   displayLeadSec: number = AUDIO.DISPLAY_LEAD_SEC;
 
+  /** 何秒先まで音を予約するか。タイマーが間引かれるバックグラウンドでは長くする */
+  lookaheadSec: number = AUDIO.LOOKAHEAD_SEC;
+
   constructor(player: ClickPlayer, sound: SoundKind, ratio: SwingRatio = RATIO.DEFAULT) {
     this.#player = player;
     this.#sound = sound;
@@ -156,7 +159,7 @@ export class Metronome {
   schedule(): void {
     if (!this.running) return;
     const now = this.#player.currentTime;
-    const horizon = now + AUDIO.LOOKAHEAD_SEC;
+    const horizon = now + this.lookaheadSec;
     this.#pending = this.#pending.filter((p) => p.when > now);
     if (this.#scheduledUntil >= horizon) return;
 
