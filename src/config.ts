@@ -11,7 +11,7 @@ export const TEMPO = {
 } as const;
 
 // 1 サイクルの拍構成。BPM は「始動 → トップ」の 1 拍あたりの数として扱う。
-// スタート → トップ → インパクト → 休み（フォロースルーと、次のスタートへ光が集まる時間）を繰り返す。
+// スタート → トップ → インパクト → 休み（フォロースルーと、次のスタートへ輪が縮む時間）を繰り返す。
 // トップ → インパクトの長さは比率（バックスイング : ダウンスイング）で決まる。
 export const CYCLE = {
   TICK_KINDS: ['start', 'top', 'impact'] as const satisfies readonly TickKind[],
@@ -19,7 +19,7 @@ export const CYCLE = {
   BACKSWING_BEATS: 1,
   // インパクトから次のスタートまでの拍数
   AFTER_IMPACT_BEATS: 2,
-  // 休みの最後の CONVERGE_BEATS 拍で、両端から光がスタートラインへ集まる
+  // 休みの最後の CONVERGE_BEATS 拍で、スタートラインの輪が縮んでいく
   CONVERGE_BEATS: 1,
   // インパクト後にフォロースルー方向へ光が流れて消えるまでの拍数
   FOLLOW_THROUGH_BEATS: 0.5,
@@ -43,18 +43,17 @@ export const METER = {
   START_X: 0.14,
   TOP_X: 0.94,
   FINISH_X: 0.02,
-  LEFT_EDGE_X: 0,
-  RIGHT_EDGE_X: 1,
   // 残像の本数と間隔（秒）。速く動くほど残像が離れ、しなりが見える
   TRAIL_COUNT: 3,
   TRAIL_INTERVAL_SEC: 0.035,
   TRAIL_DECAY: 0.45,
   // トップから溜めて加速する度合い（easeIn の指数）
   WHIP_EXPONENT: 3,
-  // 両端の光がスタートラインへ加速しながら集まる度合い（easeIn の指数）
+  // スタート前の輪が加速しながら閉じる度合い（easeIn の指数）
   CONVERGE_EXPONENT: 2,
   // スタート拍でスタートラインが光る長さ（拍）
-  START_FLASH_BEATS: 0.25,
+  // 離れた場所から見ても気付けるよう、少し長めに光らせる
+  START_FLASH_BEATS: 0.4,
 } as const;
 
 export const SOUND = {
@@ -92,7 +91,7 @@ export const AUDIO = {
   DISPLAY_LEAD_MAX_SEC: 0.05,
   // フレーム間隔の平滑化係数（指数移動平均）
   FRAME_INTERVAL_SMOOTHING: 0.1,
-  // STOP 後に出力を絞る時間。再開時の最初の音（START_DELAY_SEC + 集まりの 1 拍以上先）より短くする
+  // STOP 後に出力を絞る時間。再開時の最初の音（START_DELAY_SEC + 輪が縮む 1 拍以上先）より短くする
   STOP_MUTE_SEC: 0.3,
   OUTPUT_TIMESTAMP: {
     // 現在時刻より先・経過時間が負になる誤差の許容幅

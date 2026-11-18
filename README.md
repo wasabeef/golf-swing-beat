@@ -16,7 +16,7 @@ A golf swing tempo trainer that runs in your browser. A moving light and count s
 ## How to use
 
 1. Put your phone in landscape, outside your swing path. Line up the club head with the vertical light (the start line).
-2. Press START. Lights move in from both edges. Start your takeaway on the first sound, when they meet.
+2. Press START. A ring closes in on the start line. Start your takeaway on the first sound, when it closes.
 3. The second sound is the top, and the third (higher) sound is impact.
 
 | Action | Button | Key |

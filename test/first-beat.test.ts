@@ -6,11 +6,10 @@ import { afterEach, describe, it } from 'node:test';
 import { estimateHeardTime, steadyHeardTime } from '../src/audio.ts';
 import { AUDIO, CYCLE, METER, RATIO, TEMPO, type SwingRatio } from '../src/config.ts';
 import { Metronome, type DisplayState } from '../src/metronome.ts';
-import { cycleLayout, meterLights, startFlash } from '../src/timeline.ts';
+import { closingRing, cycleLayout, meterLights, startFlash } from '../src/timeline.ts';
 import { advance, FakePlayer } from './helpers/fake-player.ts';
 
 const EPSILON = 1e-6;
-const CONVERGE_SPAN = METER.START_X - METER.LEFT_EDGE_X;
 const EVEN: SwingRatio = 1;
 const CYCLE_BEATS = cycleLayout(EVEN).length;
 
@@ -33,25 +32,25 @@ const distanceToCycleStart = ({ position: u, ratio }: DisplayState): number => {
 };
 
 describe('1 拍目: 光の形', () => {
-  it('拍ちょうどで両端の光がスタートラインに着き、それより前には着いていない', () => {
-    const justBefore = meterLights(-1e-6, EVEN);
-    assert.equal(justBefore.length, 2);
-    for (const light of justBefore) {
-      assert.ok(Math.abs(light.x - METER.START_X) < 1e-5);
-      assert.ok(light.intensity > 0.99);
-    }
+  it('拍ちょうどで輪が閉じ、それより前には閉じていない', () => {
+    const justBefore = closingRing(-1e-6, EVEN);
+    assert.ok(justBefore);
+    assert.ok(justBefore.size < 1e-5);
+    assert.ok(justBefore.intensity > 0.99);
+    // スタートラインで待っている光も、拍の直前に最も明るくなる
+    const [light] = meterLights(-1e-6, EVEN);
+    assert.ok(light && light.x === METER.START_X && light.intensity > 0.99);
   });
 
-  it('0.1 拍前にはまだ 10% 以上離れている（早く着いて見えない）', () => {
-    for (const light of meterLights(-0.1, EVEN)) {
-      assert.ok(Math.abs(light.x - METER.START_X) >= CONVERGE_SPAN * 0.1, `x=${light.x}`);
-    }
+  it('0.1 拍前にはまだ 10% 以上開いている（早く閉じて見えない）', () => {
+    const ring = closingRing(-0.1, EVEN);
+    assert.ok(ring && ring.size >= 0.1, `size=${ring?.size}`);
   });
 
-  it('光は拍に向かって加速しながら集まる', () => {
-    const at = (u: number) => meterLights(u, EVEN)[0]!.x;
-    const early = at(-0.8) - at(-0.9);
-    const late = at(-1e-6) - at(-0.1);
+  it('輪は拍に向かって加速しながら縮む', () => {
+    const at = (u: number) => closingRing(u, EVEN)!.size;
+    const early = at(-0.9) - at(-0.8);
+    const late = at(-0.1) - at(-1e-6);
     assert.ok(late > early, `early=${early}, late=${late}`);
   });
 
@@ -76,7 +75,7 @@ describe('1 拍目: 音と光のタイミング', () => {
 
   for (const latency of [0, 0.04, 0.25]) {
     for (const bpm of [TEMPO.MIN, TEMPO.DEFAULT, TEMPO.MAX]) {
-      it(`出力遅延 ${latency * 1000} ms・テンポ ${bpm}: スタート音が聞こえる瞬間に光が集まり切る`, async () => {
+      it(`出力遅延 ${latency * 1000} ms・テンポ ${bpm}: スタート音が聞こえる瞬間に輪が閉じる`, async () => {
         const player = new FakePlayer(latency);
         metronome = new Metronome(player, 't1');
         await metronome.start(bpm);
@@ -93,7 +92,7 @@ describe('1 拍目: 音と光のタイミング', () => {
     }
   }
 
-  it('最初のスタート音の前に、ちょうど 1 拍分の光の集まりが見える', async () => {
+  it('最初のスタート音の前に、ちょうど 1 拍分の縮む輪が見える', async () => {
     const player = new FakePlayer(0);
     metronome = new Metronome(player, 't1');
     const bpm = TEMPO.DEFAULT;
@@ -105,14 +104,15 @@ describe('1 拍目: 音と光のタイミング', () => {
     const beat = 60 / bpm;
     assert.ok(Math.abs(first.when - (AUDIO.START_DELAY_SEC + CYCLE.CONVERGE_BEATS * beat)) < EPSILON);
 
-    // 集まり始める瞬間は光が両端にある
+    // 縮み始める瞬間は輪が最も大きい
     const { position } = displayWhenHeard(metronome, player, first.when - CYCLE.CONVERGE_BEATS * beat);
     assert.ok(Math.abs(position + CYCLE.CONVERGE_BEATS) < EPSILON);
+    assert.ok(closingRing(position + EPSILON, EVEN)!.size > 0.99);
   });
 
   /**
    * 時計を進めながらテンポを変え、すべてのスタート音について
-   * 「表示される瞬間」に時計を合わせて、その時点の光が集まり切っているかを調べる。
+   * 「表示される瞬間」に時計を合わせて、その時点で輪が閉じているかを調べる。
    * 予約済みの音の取り消しと、遅延中の旧テンポ区間の両方が正しくないと通らない。
    */
   async function checkAllStartsWhileChanging(
@@ -153,7 +153,7 @@ describe('1 拍目: 音と光のタイミング', () => {
     return checked;
   }
 
-  it('テンポを何度変えても（拍の直前・遅延の最中を含む）、スタート音は光が集まり切る瞬間に鳴る', async () => {
+  it('テンポを何度変えても（拍の直前・遅延の最中を含む）、スタート音は輪が閉じる瞬間に鳴る', async () => {
     const changes = [
       [1.3, 45],
       [2.71, 80],
@@ -172,7 +172,7 @@ describe('1 拍目: 音と光のタイミング', () => {
     }
   });
 
-  it('比率をテンポと混ぜて何度変えても、スタート音は光が集まり切る瞬間に鳴る', async () => {
+  it('比率をテンポと混ぜて何度変えても、スタート音は輪が閉じる瞬間に鳴る', async () => {
     const changes = [
       [1.2, { ratio: 3 }],
       [2.5, 100],
@@ -191,7 +191,7 @@ describe('1 拍目: 音と光のタイミング', () => {
     }
   });
 
-  it('長押しでテンポを連続して変えている最中も、スタート音は光が集まり切る瞬間に鳴る', async () => {
+  it('長押しでテンポを連続して変えている最中も、スタート音は輪が閉じる瞬間に鳴る', async () => {
     const changes: Array<[number, number]> = [];
     for (let i = 0; i <= TEMPO.MAX - TEMPO.MIN; i += 1) changes.push([1 + i * 0.08, TEMPO.MIN + i]);
     for (let i = 0; i <= TEMPO.MAX - TEMPO.MIN; i += 1) changes.push([12 + i * 0.08, TEMPO.MAX - i]);

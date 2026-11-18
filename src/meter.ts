@@ -3,7 +3,7 @@
 
 import { METER } from './config.ts';
 import type { DisplayState } from './metronome.ts';
-import { beatSeconds, meterLights, startFlash, type Light } from './timeline.ts';
+import { beatSeconds, closingRing, meterLights, startFlash, type ClosingRing, type Light } from './timeline.ts';
 
 interface Palette {
   readonly light: string;
@@ -22,7 +22,15 @@ const START_LINE_ALPHA = 0.7;
 const TOP_MARKER_HEIGHT_RATIO = 0.44;
 const TOP_MARKER_WIDTH_RATIO = 0.008;
 const TOP_MARKER_DASH_RATIO = 0.025;
-const FLASH_WIDTH_SCALE = 2;
+// スタート拍の演出。地面に置いたスマホを離れて見ても気付けるよう、2 つを重ねる
+// 1. メーター全体をうっすら光らせる
+const FLASH_TINT_ALPHA = 0.22;
+// 2. スタートラインから輪が広がる（大きさは高さに対する比）
+const FLASH_RING_MAX_RATIO = 1.1;
+const FLASH_RING_WIDTH_RATIO = 0.05;
+// スタート前に縮む輪の、縮み始めの大きさと線の太さ（高さに対する比）
+const CLOSING_RING_MAX_RATIO = 0.9;
+const CLOSING_RING_WIDTH_RATIO = 0.035;
 const LABEL_FONT_RATIO = 0.075;
 // ラベルとマーカーの間のすき間（フォントの大きさに対する比）
 const LABEL_GAP_RATIO = 0.6;
@@ -80,6 +88,8 @@ export class MeterView {
     if (state === null) return;
     const { position: u, bpm, ratio } = state;
 
+    const ring = closingRing(u, ratio);
+    if (ring) this.#drawClosingRing(ring);
     const flash = startFlash(u, ratio);
     if (flash > 0) this.#drawFlash(flash);
 
@@ -134,28 +144,64 @@ export class MeterView {
   #drawStartLine(): void {
     this.#ctx.save();
     this.#ctx.globalAlpha = START_LINE_ALPHA;
-    this.#strokeStartLine(this.#palette.startLine, 1);
+    this.#strokeStartLine(this.#palette.startLine);
     this.#ctx.restore();
   }
 
-  /** スタート拍の瞬間、スタートラインを光らせる */
-  #drawFlash(strength: number): void {
+  /** スタートラインに向かって縮む輪。閉じた瞬間がスタート */
+  #drawClosingRing({ size, intensity }: ClosingRing): void {
+    const { height } = this.#canvas;
     const ctx = this.#ctx;
+    const minRadius = height * DOT_RADIUS_RATIO;
     ctx.save();
-    ctx.globalAlpha = strength;
+    ctx.globalAlpha = intensity;
+    ctx.strokeStyle = this.#palette.light;
     ctx.shadowColor = this.#palette.light;
-    ctx.shadowBlur = this.#canvas.height * GLOW_RATIO;
-    this.#strokeStartLine(this.#palette.light, FLASH_WIDTH_SCALE);
+    ctx.shadowBlur = height * GLOW_RATIO;
+    ctx.lineWidth = Math.max(MIN_LINE_PX, height * CLOSING_RING_WIDTH_RATIO);
+    ctx.beginPath();
+    ctx.arc(this.#toPx(METER.START_X), this.#centerY, minRadius + (height * CLOSING_RING_MAX_RATIO - minRadius) * size, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   }
 
-  #strokeStartLine(color: string, widthScale: number): void {
+  /**
+   * スタート拍の瞬間の演出。strength は 1 から 0 へ減っていく。
+   * メーター全体をうっすら光らせ、スタートラインから輪を広げる
+   */
+  #drawFlash(strength: number): void {
+    const { width, height } = this.#canvas;
+    const ctx = this.#ctx;
+    const x = this.#toPx(METER.START_X);
+    const y = this.#centerY;
+    // startFlash は (1 - 経過) ** 2 なので、平方根で経過の割合（0 → 1）に戻す
+    const progress = 1 - Math.sqrt(strength);
+    ctx.save();
+    ctx.fillStyle = this.#palette.light;
+    ctx.strokeStyle = this.#palette.light;
+
+    ctx.globalAlpha = FLASH_TINT_ALPHA * strength;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.shadowColor = this.#palette.light;
+    ctx.shadowBlur = height * GLOW_RATIO;
+    const minRadius = height * DOT_RADIUS_RATIO;
+    const radius = minRadius + (height * FLASH_RING_MAX_RATIO - minRadius) * progress;
+    ctx.globalAlpha = 1 - progress;
+    ctx.lineWidth = Math.max(MIN_LINE_PX, height * FLASH_RING_WIDTH_RATIO * (1 - progress));
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  #strokeStartLine(color: string): void {
     const { height } = this.#canvas;
     const ctx = this.#ctx;
     const x = this.#toPx(METER.START_X);
     const half = (height * START_LINE_HEIGHT_RATIO) / 2;
     ctx.strokeStyle = color;
-    ctx.lineWidth = Math.max(MIN_LINE_PX, height * START_LINE_WIDTH_RATIO) * widthScale;
+    ctx.lineWidth = Math.max(MIN_LINE_PX, height * START_LINE_WIDTH_RATIO);
     ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(x, this.#centerY - half);

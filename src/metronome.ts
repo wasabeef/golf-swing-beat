@@ -124,7 +124,7 @@ export class Metronome {
     // resume を待っている間に STOP された
     if (generation !== this.#generation) return;
 
-    // 最初のスタート音の前に、光が両端から集まる時間を取る
+    // 最初のスタート音の前に、輪が縮む時間を取る
     const leadIn = CYCLE.CONVERGE_BEATS * beatSeconds(bpm);
     const origin = this.#player.currentTime + AUDIO.START_DELAY_SEC + leadIn;
     this.#segments = [

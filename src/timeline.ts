@@ -30,7 +30,7 @@ export interface CycleLayout {
 }
 
 if (CYCLE.FOLLOW_THROUGH_BEATS + CYCLE.CONVERGE_BEATS > CYCLE.AFTER_IMPACT_BEATS) {
-  throw new Error('CYCLE 設定が不正: フォロースルーと光の集まりが重なっています');
+  throw new Error('CYCLE 設定が不正: フォロースルーとスタート前の輪が重なっています');
 }
 
 export function cycleLayout(ratio: SwingRatio): CycleLayout {
@@ -43,7 +43,7 @@ const mod = (n: number, m: number): number => ((n % m) + m) % m;
 const lerp = (a: number, b: number, p: number): number => a + (b - a) * p;
 const easeInOutSine = (p: number): number => -(Math.cos(Math.PI * p) - 1) / 2;
 const easeOutQuad = (p: number): number => 1 - (1 - p) * (1 - p);
-// 光の集まりは加速しながらスタートラインに着く。減速させると拍より前に着いて見え、1 拍目が早く感じる
+// 輪は加速しながら閉じる。減速させると拍より前に閉じて見え、1 拍目が早く感じる
 const converge = (p: number): number => p ** METER.CONVERGE_EXPONENT;
 const whip = (p: number): number => p ** METER.WHIP_EXPONENT;
 
@@ -103,9 +103,17 @@ export function ticksBetween(timeline: Timeline, from: number, to: number): Tick
   return ticks;
 }
 
+/** スタート前に縮んでいく輪。size は 1（最大）から 0（スタートの光の点と同じ大きさ）へ縮む */
+export interface ClosingRing {
+  readonly size: number;
+  /** 0 〜 1 */
+  readonly intensity: number;
+}
+
 /**
  * 拍位置 u での光の一覧。
- * 開始前は、最初のスタート直前の光の集まりだけを表示する。
+ * スタート直前の CONVERGE_BEATS 拍は、光がスタートラインで待ち、だんだん明るくなる。
+ * 開始前は、最初のスタート直前の分だけを表示する。
  */
 export function meterLights(u: number, ratio: SwingRatio): Light[] {
   if (u < -CYCLE.CONVERGE_BEATS) return [];
@@ -132,19 +140,29 @@ export function meterLights(u: number, ratio: SwingRatio): Light[] {
 
   if (c >= convergeFrom) {
     const p = (c - convergeFrom) / CYCLE.CONVERGE_BEATS;
-    const e = converge(p);
-    return [
-      { x: lerp(METER.LEFT_EDGE_X, METER.START_X, e), intensity: p },
-      { x: lerp(METER.RIGHT_EDGE_X, METER.START_X, e), intensity: p },
-    ];
+    return [{ x: METER.START_X, intensity: p }];
   }
 
   return [];
 }
 
 /**
+ * 拍位置 u での、スタートラインに向かって縮む輪（なければ null）。
+ * スタート直前の CONVERGE_BEATS 拍で縮み、スタート音の瞬間にちょうど閉じる。
+ */
+export function closingRing(u: number, ratio: SwingRatio): ClosingRing | null {
+  if (u < -CYCLE.CONVERGE_BEATS) return null;
+  const { length } = cycleLayout(ratio);
+  const convergeFrom = length - CYCLE.CONVERGE_BEATS;
+  const c = mod(u, length);
+  if (c < convergeFrom) return null;
+  const p = (c - convergeFrom) / CYCLE.CONVERGE_BEATS;
+  return { size: 1 - converge(p), intensity: p };
+}
+
+/**
  * スタート拍（1 拍目）の瞬間にスタートラインを光らせる強さ（0〜1）。
- * 光が集まった瞬間と音を目で結び付けやすくする。
+ * 輪が閉じた瞬間と音を目で結び付けやすくする。
  */
 export function startFlash(u: number, ratio: SwingRatio): number {
   if (u < 0) return 0;

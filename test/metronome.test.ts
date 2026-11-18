@@ -24,7 +24,7 @@ describe('Metronome', () => {
   let metronome: Metronome | undefined;
   afterEach(() => metronome?.stop());
 
-  it('光が集まる 1 拍の後にスタート音が鳴り、以降は等間隔で 3 拍 + 休み', async () => {
+  it('輪が縮む 1 拍の後にスタート音が鳴り、以降は等間隔で 3 拍 + 休み', async () => {
     const player = new FakePlayer();
     metronome = new Metronome(player, 't1');
     const bpm = 60;
@@ -361,7 +361,7 @@ describe('Metronome: 開始・停止の境界', () => {
     metronome.stop();
   });
 
-  it('STOP → START で、最初からやり直す（光が集まる 1 拍の後にスタート音）', async () => {
+  it('STOP → START で、最初からやり直す（輪が縮む 1 拍の後にスタート音）', async () => {
     const player = new FakePlayer();
     const metronome = new Metronome(player, 't1');
     await metronome.start(60);

@@ -7,6 +7,7 @@ import {
   beatSeconds,
   beatTime,
   clampRatio,
+  closingRing,
   clampTempo,
   createTimeline,
   cycleLayout,
@@ -143,21 +144,26 @@ describe('meterLights', () => {
     assert.ok(late > early * 5, `early=${early}, late=${late}`);
   });
 
-  it('次のスタート直前は両端から光が集まる', () => {
+  it('次のスタート直前は、光がスタートラインで待ち、輪が縮んでいく', () => {
     const start = CYCLE_BEATS - CYCLE.CONVERGE_BEATS;
-    const [left, right] = meterLights(start + 0.01, EVEN);
-    assert.ok(left && right);
-    assert.ok(left.x < METER.START_X && right.x > METER.START_X);
-
-    const [nearLeft, nearRight] = meterLights(CYCLE_BEATS - 0.001, EVEN);
-    assert.ok(nearLeft && nearRight);
-    assert.ok(Math.abs(nearLeft.x - METER.START_X) < 0.01);
-    assert.ok(Math.abs(nearRight.x - METER.START_X) < 0.01);
+    const [light] = meterLights(start + 0.01, EVEN);
+    assert.ok(light && light.x === METER.START_X);
+    assert.ok(closingRing(start + 0.01, EVEN)!.size > 0.99);
+    assert.ok(closingRing(CYCLE_BEATS - 0.001, EVEN)!.size < 0.01);
   });
 
-  it('最初のスタート前の 1 拍も光が集まり、それより前は何も出ない', () => {
-    assert.equal(meterLights(-0.5, EVEN).length, 2);
+  it('スイング中は輪を出さない', () => {
+    const { impact } = cycleLayout(EVEN);
+    for (const u of [0, 0.5, 1, impact, impact + CYCLE.FOLLOW_THROUGH_BEATS]) {
+      assert.equal(closingRing(u, EVEN), null, `u=${u}`);
+    }
+  });
+
+  it('最初のスタート前の 1 拍も輪が縮み、それより前は何も出ない', () => {
+    assert.equal(meterLights(-0.5, EVEN).length, 1);
+    assert.ok(closingRing(-0.5, EVEN));
     assert.deepEqual(meterLights(-CYCLE.CONVERGE_BEATS - 0.01, EVEN), []);
+    assert.equal(closingRing(-CYCLE.CONVERGE_BEATS - 0.01, EVEN), null);
   });
 
   it('光の位置と強さは常に 0〜1 に収まる（どの比率でも）', () => {
