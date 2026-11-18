@@ -1,7 +1,7 @@
 // UI の組み立て。
 
 import { ClickEngine } from './audio.ts';
-import { registerServiceWorker, setupInstall } from './install.ts';
+import { registerServiceWorker, setupInstall } from './service-worker.ts';
 import { AUDIO, RATIO, SOUND, TEMPO, UI, VOLUME, type SwingRatio } from './config.ts';
 import { MeterView } from './meter.ts';
 import { Metronome } from './metronome.ts';
