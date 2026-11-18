@@ -20,6 +20,8 @@
   --display-sub: #8a90a0;
   --radius: 14px;
   --gutter: 16px;
+  /* 数字枠と START の幅。BPM 3 桁と「BPM · 3.0:1」が入る幅で固定し、表示が変わっても横にずれないようにする */
+  --readout-width: 8rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -129,17 +131,16 @@ body {
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 8px;
-  min-width: 96px;
+  width: var(--readout-width);
 }
 
 .display {
-  /* 数字（BPM・比率・音色・Err）の最大文字数。文字が変わっても幅を変えず、隣のボタンをずらさない */
-  --display-chars: 3;
   display: grid;
   place-content: center;
   justify-items: center;
   gap: 2px;
-  min-width: calc(var(--display-chars) * 1ch + 24px);
+  min-width: 0;
+  overflow: hidden;
   padding: 4px 12px;
   border-radius: 8px;
   background: var(--meter-panel);
@@ -353,6 +354,7 @@ body {
   }
 
   .readout {
+    width: auto;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
   }
@@ -456,9 +458,9 @@ body {
   }
 
   .readout {
+    width: var(--readout-width);
     grid-template-columns: none;
     grid-template-rows: 1fr auto;
-    min-width: 112px;
   }
 
   .controls {
