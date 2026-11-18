@@ -18,6 +18,7 @@ function byId<T extends HTMLElement>(id: string): T {
 const els = {
   meter: byId<HTMLCanvasElement>('meter'),
   display: byId<HTMLOutputElement>('display'),
+  displaySub: byId<HTMLSpanElement>('displaySub'),
   startStop: byId<HTMLButtonElement>('startStop'),
   tempoDown: byId<HTMLButtonElement>('tempoDown'),
   tempoUp: byId<HTMLButtonElement>('tempoUp'),
@@ -51,9 +52,12 @@ function persist(): void {
   saveSettings(settings);
 }
 
+const ratioLabel = (ratio: SwingRatio): string => `${ratio}${UI.RATIO_SEPARATOR}1`;
+
 function renderDisplay(): void {
   els.display.value = temporaryLabel ?? String(settings.tempo);
   els.display.classList.toggle('is-sound', temporaryLabel !== null);
+  els.displaySub.textContent = `${UI.TEMPO_UNIT}${UI.DISPLAY_SUB_SEPARATOR}${ratioLabel(settings.ratio)}`;
 }
 
 function renderControls(): void {
@@ -83,8 +87,6 @@ function changeTempo(delta: number): void {
   renderDisplay();
   renderControls();
 }
-
-const ratioLabel = (ratio: SwingRatio): string => `${ratio}${UI.RATIO_SEPARATOR}1`;
 
 /** 比率の選択ボタンを作る（バックスイング : ダウンスイング） */
 function createRatioButtons(): HTMLButtonElement[] {

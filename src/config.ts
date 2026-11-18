@@ -128,6 +128,9 @@ export const AUDIO = {
 export const UI = {
   SOUND_LABEL_MS: 1000,
   RATIO_SEPARATOR: ':',
+  // 数字の下に出す「BPM · 3:1」
+  TEMPO_UNIT: 'BPM',
+  DISPLAY_SUB_SEPARATOR: ' · ',
   ERROR_LABEL: 'Err',
   REPEAT_DELAY_MS: 400,
   REPEAT_INTERVAL_MS: 80,

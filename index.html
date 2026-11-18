@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="光と音でゴルフスイングのリズムをつかむテンポトレーナー" />
-    <meta name="theme-color" content="#070a09" />
+    <meta name="theme-color" content="#111317" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -35,7 +35,10 @@
           <canvas id="meter" class="meter" aria-hidden="true"></canvas>
         </div>
         <div class="readout">
-          <output id="display" class="display" aria-live="polite"></output>
+          <div class="display">
+            <output id="display" class="display-value" aria-live="polite"></output>
+            <span id="displaySub" class="display-sub"></span>
+          </div>
           <button id="startStop" class="btn btn-primary" type="button" aria-pressed="false">
             START
           </button>

@@ -1,48 +1,51 @@
 :root {
   color-scheme: light dark;
-  --bg: #f3f5f2;
+  --bg: #f4f5f7;
   --surface: #ffffff;
-  --text: #17201b;
-  --text-muted: #5b6760;
-  --border: #d6ddd8;
-  --btn-bg: #e8ece9;
-  --btn-bg-active: #d4dbd6;
-  --accent: #0f9f6e;
+  --text: #191c22;
+  --text-muted: #5f6573;
+  --border: #d9dce2;
+  --btn-bg: #eaecf0;
+  --btn-bg-active: #d7dae1;
+  --accent: #e8661a;
   --accent-text: #ffffff;
-  --meter-bg: #070a09;
-  --meter-border: #2a332e;
-  --meter-light: #3dffb0;
-  --meter-start-line: #3dffb0;
-  --meter-tick: #26302b;
-  --display-text: #3dffb0;
+  --meter-bg: #111317;
+  --meter-border: #2a2e37;
+  --meter-panel: #0a0b0e;
+  --meter-light: #ff8a3d;
+  --meter-start-line: #eef0f4;
+  --meter-track: #20242c;
+  --meter-label: #5a606e;
+  --display-text: #eef0f4;
+  --display-sub: #8a90a0;
   --radius: 14px;
   --gutter: 16px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0d1110;
-    --surface: #161c19;
-    --text: #e6ece8;
-    --text-muted: #94a39a;
-    --border: #2a332e;
-    --btn-bg: #222a26;
-    --btn-bg-active: #2f3934;
-    --accent: #1fc48a;
-    --accent-text: #04140d;
+    --bg: #0d0f12;
+    --surface: #171a1f;
+    --text: #eef0f4;
+    --text-muted: #8a90a0;
+    --border: #2a2e37;
+    --btn-bg: #23272f;
+    --btn-bg-active: #2f343e;
+    --accent: #ff8a3d;
+    --accent-text: #1a0d03;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #0d1110;
-  --surface: #161c19;
-  --text: #e6ece8;
-  --text-muted: #94a39a;
-  --border: #2a332e;
-  --btn-bg: #222a26;
-  --btn-bg-active: #2f3934;
-  --accent: #1fc48a;
-  --accent-text: #04140d;
+  --bg: #0d0f12;
+  --surface: #171a1f;
+  --text: #eef0f4;
+  --text-muted: #8a90a0;
+  --border: #2a2e37;
+  --btn-bg: #23272f;
+  --btn-bg-active: #2f343e;
+  --accent: #ff8a3d;
+  --accent-text: #1a0d03;
 }
 
 * {
@@ -113,8 +116,7 @@ body {
 .meter-frame {
   min-width: 0;
   border-radius: 8px;
-  background: linear-gradient(180deg, #030504, #0b100e 50%, #030504);
-  box-shadow: inset 0 0 18px rgb(0 0 0 / 0.9);
+  background: var(--meter-panel);
 }
 
 .meter {
@@ -131,23 +133,36 @@ body {
 }
 
 .display {
-  /* 表示する文字（BPM・比率・音色・Err）の最大文字数。文字が変わっても幅を変えず、隣のボタンをずらさない */
+  /* 数字（BPM・比率・音色・Err）の最大文字数。文字が変わっても幅を変えず、隣のボタンをずらさない */
   --display-chars: 3;
   display: grid;
-  place-items: center;
+  place-content: center;
+  justify-items: center;
+  gap: 2px;
   min-width: calc(var(--display-chars) * 1ch + 24px);
   padding: 4px 12px;
   border-radius: 8px;
-  background: #020403;
-  color: var(--display-text);
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: clamp(1.8rem, 6vw, 2.8rem);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 10px color-mix(in srgb, var(--display-text) 70%, transparent);
+  background: var(--meter-panel);
 }
 
-.display.is-sound {
+.display-value {
+  color: var(--display-text);
+  font-size: clamp(1.8rem, 6vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.display-sub {
+  color: var(--display-sub);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.display-value.is-sound {
   font-style: italic;
 }
 
@@ -231,9 +246,11 @@ body {
   filter: brightness(0.9);
 }
 
+/* 動作中は STOP を目立たせつつ、START のオレンジと区別する */
 .btn-primary[aria-pressed='true'] {
-  background: #e0533d;
-  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--btn-bg);
+  color: var(--text);
 }
 
 .volume {
